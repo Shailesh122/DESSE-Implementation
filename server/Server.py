@@ -167,6 +167,8 @@ class Server:
         print("------------------------------------------------------")
         #start_time = time.time()
         tw = c.recv(1024).decode()
+        ID = []
+        Z = []
         #print("Token received: ",tw)
         c.send(str("received token!!").encode())
         keywordid = c.recv(1024).decode()
@@ -206,17 +208,33 @@ class Server:
             ind = resultlist[0]
             operation = resultlist[1]
             counter = resultlist[len(resultlist) - 1]
-            print("Key is :",key)
-            #break
+            print("\nKey is :",key)
             searchtoken = self.permuteInv(b64decode(key),searchtoken).decode()
-            print("Generated search token type:",type(searchtoken))
-            print("Generated Search token is :",searchtoken)
-            #break
+            print("\nGenerated search token type:",type(searchtoken))
+            print("\nGenerated Search token is :",searchtoken)
+            if (int(counter)>0):
+                if(operation=='del'):
+                    if ((ind not in Z) and (ind not in ID)):
+                        Z.append(ind)
+                        print("Appended to Z")
+                elif(operation=='add'):
+                    if ((ind not in Z) and (ind not in ID)):
+                        ID.append(ind)
+            else:
+                if ((ind not in Z) and (ind not in ID)):
+                    ID.append(ind)
+        print("Keyword is available on files:",ID)
+        print("Keyword is deleted from the files:",Z)
+        req = c.recv(3).decode()
+        c.send(format(len(ID),'06d').encode())
+        for id in ID:
+            c.send(format(int(id),'06d').encode())
         c.shutdown(socket.SHUT_RDWR)
         c.close()
 
 
     def handle_client(self, c, addr):
+        print("Waiting for the client input.")
         choice = c.recv(1).decode()
         print("Client requested for operation :",choice)
         if choice=='1':
@@ -233,7 +251,7 @@ class Server:
         elif choice=='4':
             self.serversearch(c)
         else:
-            print('choice not valid!')
+            print('choice not valid or choice is not applicable for server')
 
 
 server = Server()

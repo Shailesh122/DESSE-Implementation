@@ -23,6 +23,8 @@ class Client:
         self.keywordmap = {}
         self.keywordcount = 0
         self.M = {} # empty map # the map will store the search token and counter Node
+        self.filenames = {}
+        self.filecounter = 0
         self.connect_to_server()
 
     def perfXor(self,msg,key):
@@ -55,6 +57,13 @@ class Client:
         #print("Searchtoken:", node.searchtoken)
         confirm = self.s.recv(1024)
         #print(confirm)
+        self.s.send(str("req").encode()) # request for size of list
+        size = int(self.s.recv(6).decode())
+        ID = []
+        for i in range(size):
+            id = int(self.s.recv(6).decode())
+            ID.append(id)
+        print("The keyword is present in the files with id:",ID)
         self.s.shutdown(socket.SHUT_RDWR)
         self.s.close()
         self.reconnect()
@@ -80,22 +89,22 @@ class Client:
             node = Node(searchtoken,counter)
             self.M[w] = node
         node = self.M[w]
-        print("Current node for the token is:",end="")
+        print("\nCurrent node for the token is:",end="")
         print(self.M[w])
         searchtoken = node.searchtoken
-        print("Current searchtoken for the keyword is:",searchtoken)
+        print("\nCurrent searchtoken for the keyword is:",searchtoken)
         keynext = self.keygen(self.secpar)
-        print("Generating next key for the encryption:",keynext)
+        print("\nGenerating next key for the encryption:",keynext)
         nextsearchtoken = self.permute(keynext,searchtoken).decode()
-        print("Generating next search token by permutation of previous:",nextsearchtoken)
+        print("\nGenerating next search token by permutation of previous:",nextsearchtoken)
         tmp = self.permuteInv(keynext,nextsearchtoken).decode()
-        print("Testing the decryption of the searchtoken:",tmp)
+        print("\nTesting the decryption of the searchtoken:",tmp)
         self.M[w] = Node(nextsearchtoken,node.counter+1)
-        print("Keyword is updated on client end:",end="")
+        print("\nKeyword is updated on client end:",end="")
         print(self.M[w])
         strkeynext = b64encode(keynext).decode('utf-8') #base 64 encoding is necessary
         concatedstr = str(ind)+","+str(op)+","+strkeynext+","+str(node.counter)
-        print("concated string info:",concatedstr)
+        print("\nconcated string info:",concatedstr)
 
         oraclekey = self.randomoracle(str(tw)+","+str(nextsearchtoken))
         print("Oracle key computed:",oraclekey)
@@ -230,6 +239,22 @@ class Client:
                 c.shutdown(socket.SHUT_RDWR)
                 c.close()
 
+    def perfFileOp(self,filename,op,choicecode):
+        # op can be add or del
+        self.s.send(choicecode.encode())
+        keywords = self.getKeywords(filename)
+        if filename not in self.filenames.keys():
+            self.filenames[filename] = self.filecounter+1
+            self.filecounter+=1
+        ind = self.filenames[filename]
+        for word in keywords:
+            print("Updating keyword:", word)
+            self.clientupdate(ind, word, op)
+
+    def showAllKeywords(self):
+        print("All Keywords uploaded are as follows:")
+        print(self.keywordmap.keys())
+
     def main(self):
         while 1:
             # 1 - receive the file
@@ -252,6 +277,14 @@ class Client:
             elif choice=='4':
                 w = input("Enter the keyword to search:")
                 self.clientsearch(w)
+            elif choice=='5':
+                filename = input("Enter the filename:")
+            elif choice=='6':
+                filename = input('please enter filename:')
+                op = input('please enter operation:')
+                self.perfFileOp(filename,op,'4')
+            elif choice=='7':
+                self.showAllKeywords()
             else:
                 print('wrong choice entered')
 
