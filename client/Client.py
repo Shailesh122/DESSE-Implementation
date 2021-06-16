@@ -6,6 +6,8 @@ from aesdet import AESDet as PRF
 from cryptography.fernet import Fernet
 from rake_nltk import Rake
 from base64 import b64encode,b64decode
+from os import listdir
+from os.path import isfile, join
 # Implementation of DESSE
 # Authors Shailesh Navale, Ayushi Sharma
 class Node:
@@ -241,15 +243,22 @@ class Client:
 
     def perfFileOp(self,filename,op,choicecode):
         # op can be add or del
-        self.s.send(choicecode.encode())
         keywords = self.getKeywords(filename)
         if filename not in self.filenames.keys():
             self.filenames[filename] = self.filecounter+1
             self.filecounter+=1
         ind = self.filenames[filename]
         for word in keywords:
+            self.s.send(choicecode.encode())
             print("Updating keyword:", word)
             self.clientupdate(ind, word, op)
+
+    def folderOp(self,folderpath,op,choicecode):
+        files = os.listdir(folderpath)
+        for file in files:
+            file = folderpath+"/"+file
+            self.perfFileOp(file,op,choicecode)
+            os.system('cls' if os.name == 'nt' else 'clear')
 
     def showAllKeywords(self):
         print("All Keywords uploaded are as follows:")
@@ -282,10 +291,26 @@ class Client:
             elif choice=='6':
                 filename = input('please enter filename:')
                 op = input('please enter operation:')
-                self.perfFileOp(filename,op,'4')
+                self.s.shutdown(socket.SHUT_RDWR)
+                self.s.close()
+                self.reconnect()
+                self.perfFileOp(filename,op,'3')
             elif choice=='7':
                 self.showAllKeywords()
+                self.s.shutdown(socket.SHUT_RDWR)
+                self.s.close()
+                self.reconnect()
+            elif choice=='8':
+                self.s.shutdown(socket.SHUT_RDWR)
+                self.s.close()
+                self.reconnect()
+                path = input("please enter the path to upload keywords:")
+                op = input("please enter the operation:")
+                self.folderOp(path,op,'3')
             else:
                 print('wrong choice entered')
+                self.s.shutdown(socket.SHUT_RDWR)
+                self.s.close()
+                self.reconnect()
 
 client = Client(128)

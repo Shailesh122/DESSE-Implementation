@@ -252,6 +252,8 @@ class Server:
             self.serversearch(c)
         else:
             print('choice not valid or choice is not applicable for server')
+            c.shutdown(socket.SHUT_RDWR)
+            c.close()
 
 
 server = Server()
