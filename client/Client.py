@@ -255,10 +255,15 @@ class Client:
 
     def folderOp(self,folderpath,op,choicecode):
         files = os.listdir(folderpath)
+        start_time = time.time()
         for file in files:
             file = folderpath+"/"+file
             self.perfFileOp(file,op,choicecode)
             os.system('cls' if os.name == 'nt' else 'clear')
+        print("---------------------------------------------------")
+        print("--- %s seconds ---" % (time.time() - start_time))
+        print("number of keywords:", len(self.keywordmap.keys()))
+        print("----------------------------------------------------")
 
     def showAllKeywords(self):
         print("All Keywords uploaded are as follows:")
