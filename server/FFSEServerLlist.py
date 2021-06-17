@@ -3,7 +3,6 @@ import threading
 import os, time
 from aesdet import AESDet as PRF
 import hashlib
-import sys
 from base64 import b64encode,b64decode
 
 class BSTNode:
@@ -59,7 +58,6 @@ class BST:
 class Server:
     def __init__(self):
         self.T = {}  # empty map
-        sys.setrecursionlimit(3000*20)
         self.bst = BST()
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.accept_connections()

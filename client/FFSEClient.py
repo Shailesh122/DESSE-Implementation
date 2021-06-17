@@ -62,6 +62,13 @@ class Client:
         cfm = self.s.recv(3)
         self.s.send(node.key.encode())
         cfm = self.s.recv(3)
+        self.s.send(str("req").encode())
+        size = int(self.s.recv(6).decode())
+        output = []
+        for i in range(size):
+            ind = int(self.s.recv(6).decode())
+            output.append(ind)
+        print("Keyword is present in files with index in :",output)
         self.s.shutdown(socket.SHUT_RDWR)
         self.s.close()
         self.reconnect()
@@ -243,12 +250,12 @@ class Client:
             os.system('cls' if os.name == 'nt' else 'clear')
         print("---------------------------------------------------")
         print("--- %s seconds ---" % (time.time() - start_time))
-        print("number of keywords:", len(self.keywordmap.keys()))
+        print("number of keywords:", len(self.ffsekeywords.keys()))
         print("----------------------------------------------------")
 
     def showAllKeywords(self):
         print("All Keywords uploaded are as follows:")
-        print(self.keywordmap.keys())
+        print(self.ffsekeywords.keys())
 
     def main(self):
         while 1:
