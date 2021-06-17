@@ -59,7 +59,7 @@ class BST:
 class Server:
     def __init__(self):
         self.T = {}  # empty map
-        sys.setrecursionlimit(3000*20)
+        sys.setrecursionlimit(3000*20) # increase the recursion stack limit for bst
         self.bst = BST()
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.accept_connections()

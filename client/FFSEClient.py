@@ -257,6 +257,17 @@ class Client:
         print("All Keywords uploaded are as follows:")
         print(self.ffsekeywords.keys())
 
+    def game1(self,choice):
+        keywords = self.ffsekeywords.keys()
+        start_time = time.time()
+        for w in keywords:
+            self.s.send(choice.encode())
+            self.clientsearch(w)
+        print("---------------------------------------------------")
+        print("--- %s seconds ---" % (time.time() - start_time))
+        print("number of keywords:", len(self.ffsekeywords.keys()))
+        print("----------------------------------------------------")
+
     def main(self):
         while 1:
             # 1 - receive the file
@@ -300,6 +311,11 @@ class Client:
                 path = input("please enter the path to upload keywords:")
                 op = input("please enter the operation:")
                 self.folderOp(path,op,'3')
+            elif choice=='9':
+                self.s.shutdown(socket.SHUT_RDWR)
+                self.s.close()
+                self.reconnect()
+                self.game1('4')
             else:
                 print('wrong choice entered')
                 self.s.shutdown(socket.SHUT_RDWR)
